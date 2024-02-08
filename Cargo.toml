@@ -1,0 +1,23 @@
+[package]
+name = "config-rs"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[features]
+default = ["toml"]
+toml = ["dep:toml"]
+yaml = ["dep:serde_yaml"]
+full = ["toml", "yaml"]
+
+[dependencies]
+toml = { version = "0.8.10", optional = true }
+serde = { version = "1.0.196", features = ["derive"] }
+# serde = { version = "1.0.196" }
+serde_yaml = { version = "0.9.31", optional = true }
+
+[dev-dependencies]
+toml = { version = "0.8.10" }
+serde = { version = "1.0.196", features = ["derive"] }
+serde_yaml = { version = "0.9.31" }
