@@ -1,4 +1,4 @@
-#[derive(PartialEq)]
+#[derive(Debug, PartialEq)]
 enum FileType {
     Unknown,
     #[cfg(feature = "toml")]
@@ -17,6 +17,7 @@ impl Error {
         }
     }
 }
+#[derive(Debug)]
 pub struct File<F> {
     pub path: String,
     file_type: FileType,
