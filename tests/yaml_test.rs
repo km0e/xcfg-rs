@@ -39,7 +39,7 @@ fn main() {
     f.inner = test.clone();
     f.save().unwrap();
     f.inner = Test::default();
-    f.load(path).unwrap();
+    f.load().unwrap();
     assert_eq!(f.inner, test);
     std::fs::remove_file(path).unwrap();
 }
