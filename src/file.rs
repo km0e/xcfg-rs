@@ -46,22 +46,21 @@ impl<F> File<F> {
     }
 }
 impl<F: serde::de::DeserializeOwned> File<F> {
-    pub fn load(&mut self, path: &str) -> Result<(), Error> {
-        self.path = String::from(path);
+    pub fn load(&mut self) -> Result<(), Error> {
         if self.file_type == FileType::Unknown {
             return Err(Error::new("Unknown file type"));
         }
-        let buf = std::fs::read_to_string(path).map_err(|e| Error {
-            message: format!("Failed to read file {}: {}", path, e),
+        let buf = std::fs::read_to_string(&self.path).map_err(|e| Error {
+            message: format!("Failed to read file {}: {}", self.path, e),
         })?;
         self.inner = match self.file_type {
             #[cfg(feature = "toml")]
             FileType::Toml => toml::from_str(&buf).map_err(|e| Error {
-                message: format!("Failed to parse file {}: {}", path, e),
+                message: format!("Failed to parse file {}: {}", self.path, e),
             })?,
             #[cfg(feature = "yaml")]
             FileType::Yaml => serde_yaml::from_str(&buf).map_err(|e| Error {
-                message: format!("Failed to parse file {}: {}", path, e),
+                message: format!("Failed to parse file {}: {}", self.path, e),
             })?,
             _ => unreachable!(),
         };
