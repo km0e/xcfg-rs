@@ -1,5 +1,5 @@
-use config_rs::File;
 use serde::{Deserialize, Serialize};
+use xcfg_rs::File;
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct Test {
     a: i32,
