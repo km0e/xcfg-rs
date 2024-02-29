@@ -1,3 +1,4 @@
+use super::error::{Error, ErrorKind};
 #[derive(Debug, PartialEq)]
 enum FileType {
     Unknown,
@@ -6,17 +7,7 @@ enum FileType {
     #[cfg(feature = "yaml")]
     Yaml,
 }
-#[derive(Debug)]
-pub struct Error {
-    pub message: String,
-}
-impl Error {
-    fn new(msg: &str) -> Self {
-        Self {
-            message: msg.to_string(),
-        }
-    }
-}
+
 #[derive(Debug)]
 pub struct File<F> {
     pub path: String,
@@ -48,20 +39,16 @@ impl<F> File<F> {
 impl<F: serde::de::DeserializeOwned> File<F> {
     pub fn load(&mut self) -> Result<(), Error> {
         if self.file_type == FileType::Unknown {
-            return Err(Error::new("Unknown file type"));
+            return Err(Error::new(ErrorKind::FileTypeError, "Unknown file type"));
         }
-        let buf = std::fs::read_to_string(&self.path).map_err(|e| Error {
-            message: format!("Failed to read file {}: {}", self.path, e),
-        })?;
+        let buf = std::fs::read_to_string(&self.path).map_err(|e| Error::from(e))?;
         self.inner = match self.file_type {
             #[cfg(feature = "toml")]
-            FileType::Toml => toml::from_str(&buf).map_err(|e| Error {
-                message: format!("Failed to parse file {}: {}", self.path, e),
-            })?,
+            FileType::Toml => toml::from_str(&buf)
+                .map_err(|e| Error::new(ErrorKind::Deserialize, &e.to_string()))?,
             #[cfg(feature = "yaml")]
-            FileType::Yaml => serde_yaml::from_str(&buf).map_err(|e| Error {
-                message: format!("Failed to parse file {}: {}", self.path, e),
-            })?,
+            FileType::Yaml => serde_yaml::from_str(&buf)
+                .map_err(|e| Error::new(ErrorKind::Deserialize, &e.to_string()))?,
             _ => unreachable!(),
         };
         Ok(())
@@ -70,26 +57,22 @@ impl<F: serde::de::DeserializeOwned> File<F> {
 impl<F: serde::Serialize> File<F> {
     fn to_string(&self) -> Result<String, Error> {
         if self.file_type == FileType::Unknown {
-            return Err(Error::new("Unknown file type"));
+            return Err(Error::new(ErrorKind::FileTypeError, "Unknown file type"));
         }
         let buf = match self.file_type {
             #[cfg(feature = "toml")]
-            FileType::Toml => toml::to_string(&self.inner).map_err(|e| Error {
-                message: format!("Failed to serialize file {}: {}", self.path, e),
-            })?,
+            FileType::Toml => toml::to_string(&self.inner)
+                .map_err(|e| Error::new(ErrorKind::Serialize, &e.to_string()))?,
             #[cfg(feature = "yaml")]
-            FileType::Yaml => serde_yaml::to_string(&self.inner).map_err(|e| Error {
-                message: format!("Failed to serialize file {}: {}", self.path, e),
-            })?,
+            FileType::Yaml => serde_yaml::to_string(&self.inner)
+                .map_err(|e| Error::new(ErrorKind::Serialize, &e.to_string()))?,
             _ => unreachable!(),
         };
         Ok(buf)
     }
     pub fn save(&self) -> Result<(), Error> {
         let buf = self.to_string()?;
-        std::fs::write(&self.path, buf).map_err(|e| Error {
-            message: format!("Failed to write file {}: {}", self.path, e),
-        })?;
+        std::fs::write(&self.path, buf).map_err(|e| Error::from(e))?;
         Ok(())
     }
 }
