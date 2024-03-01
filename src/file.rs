@@ -9,21 +9,21 @@ enum FileType {
 }
 
 #[derive(Debug)]
-pub struct File<F> {
+pub struct File<T> {
     pub path: String,
     file_type: FileType,
-    pub inner: F,
+    pub inner: T,
 }
-impl<F: Default> File<F> {
+impl<T: Default> File<T> {
     pub fn new() -> Self {
         Self {
             path: String::from(""),
             file_type: FileType::Unknown,
-            inner: F::default(),
+            inner: T::default(),
         }
     }
 }
-impl<F> File<F> {
+impl<T> File<T> {
     pub fn path(mut self, path: &str) -> Self {
         self.file_type = match path.split('.').last() {
             #[cfg(feature = "toml")]
@@ -36,7 +36,7 @@ impl<F> File<F> {
         self
     }
 }
-impl<F: serde::de::DeserializeOwned> File<F> {
+impl<T: serde::de::DeserializeOwned> File<T> {
     pub fn load(&mut self) -> Result<(), Error> {
         if self.file_type == FileType::Unknown {
             return Err(Error::new(ErrorKind::FileTypeError, "Unknown file type"));
@@ -54,8 +54,8 @@ impl<F: serde::de::DeserializeOwned> File<F> {
         Ok(())
     }
 }
-impl<F: serde::Serialize> File<F> {
-    fn to_string(&self) -> Result<String, Error> {
+impl<T: serde::Serialize> File<T> {
+    pub fn to_string(&self) -> Result<String, Error> {
         if self.file_type == FileType::Unknown {
             return Err(Error::new(ErrorKind::FileTypeError, "Unknown file type"));
         }
