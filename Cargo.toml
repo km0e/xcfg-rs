@@ -1,25 +1,33 @@
 [package]
 name = "xcfg-rs"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 description = "A simple configuration file parser for Rust"
 license = "MIT"
 repository = "https://github.com/kumudiaorong/xcfg-rs.git"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[lib]
+name = "xcfg"
+path = "src/lib.rs"
+
 [features]
 default = ["toml"]
 toml = ["dep:toml"]
 yaml = ["dep:serde_yaml"]
-full = ["toml", "yaml"]
+keep = ["dep:signal-hook"]
+full = ["toml", "yaml", "keep"]
 
 [dependencies]
 toml = { version = "0.8.10", optional = true }
 # serde = { version = "1.0.196", features = ["derive"] }
 serde = { version = "1.0.196" }
 serde_yaml = { version = "0.9.31", optional = true }
+signal-hook = { version = "0.3.17", optional = true }
 
 [dev-dependencies]
 toml = { version = "0.8.10" }
 serde = { version = "1.0.196", features = ["derive"] }
 serde_yaml = { version = "0.9.31" }
+signal-hook = { version = "0.3.17" }
+libc = "0.2.153"
