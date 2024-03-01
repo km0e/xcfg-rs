@@ -40,10 +40,10 @@ mod inner {
 }
 pub struct Saver<T> {
     inner: inner::Saver,
-    file: Arc<File<T>>,
+    file: Arc<Mutex<File<T>>>,
 }
 impl<T> Saver<T> {
-    pub fn new(file: Arc<File<T>>) -> Self {
+    pub fn new(file: Arc<Mutex<File<T>>>) -> Self {
         Self {
             inner: inner::Saver::new(),
             file,
@@ -57,7 +57,7 @@ where
     pub fn run(&self) -> Result<Action, Error> {
         loop {
             if self.inner.swap(false) {
-                self.file.save()?;
+                self.file.lock().unwrap().save()?;
                 return Ok(Action::TermSave);
             }
         }
