@@ -4,7 +4,7 @@
 //!
 //! ```rust
 //! use serde::{Deserialize, Serialize};
-//! use xcfg_rs::File;
+//! use xcfg::File;
 //! #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 //! pub struct Test {
 //!     a: i32,
@@ -47,6 +47,8 @@
 //! assert_eq!(f.inner, test);
 //! std::fs::remove_file(path).unwrap();
 
+mod error;
 mod file;
-pub use file::Error;
 pub use file::File;
+#[cfg(feature = "keep")]
+pub mod keep;
