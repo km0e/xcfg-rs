@@ -9,6 +9,7 @@ pub enum Action {
 mod inner {
     use signal_hook::consts::{SIGHUP, TERM_SIGNALS};
     use std::sync::{atomic::AtomicBool, Arc};
+    #[derive(Clone)]
     pub struct Saver {
         flag: Arc<AtomicBool>,
     }
@@ -24,6 +25,7 @@ mod inner {
             self.flag.swap(flag, std::sync::atomic::Ordering::Relaxed)
         }
     }
+    #[derive(Clone)]
     pub struct Loader {
         flag: Arc<AtomicBool>,
     }
@@ -38,6 +40,7 @@ mod inner {
         }
     }
 }
+#[derive(Clone)]
 pub struct Saver<T> {
     inner: inner::Saver,
     file: Arc<Mutex<File<T>>>,
@@ -62,7 +65,20 @@ where
             }
         }
     }
+    pub fn run_with<F>(&self, f: F) -> Result<Action, Error>
+    where
+        F: FnOnce() -> (),
+    {
+        loop {
+            if self.inner.swap(false) {
+                f();
+                self.file.lock().unwrap().save()?;
+                return Ok(Action::TermSave);
+            }
+        }
+    }
 }
+#[derive(Clone)]
 pub struct Loader<T> {
     inner: inner::Loader,
     file: Arc<Mutex<File<T>>>,
