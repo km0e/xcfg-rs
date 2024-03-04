@@ -48,6 +48,7 @@
 //! std::fs::remove_file(path).unwrap();
 
 mod error;
+pub use error::Error;
 mod file;
 pub use file::File;
 #[cfg(feature = "keep")]
