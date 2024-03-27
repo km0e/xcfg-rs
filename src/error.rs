@@ -1,9 +1,16 @@
+use std::fmt::Display;
+
 #[derive(Debug)]
 pub enum ErrorKind {
     Unknown,
     FileTypeError,
     Serialize,
     Deserialize,
+}
+impl Display for ErrorKind {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
 }
 
 #[derive(Debug)]
@@ -19,7 +26,11 @@ impl From<std::io::Error> for Error {
         }
     }
 }
-
+impl Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}: {}", self.kind, self.message)
+    }
+}
 impl Error {
     pub fn new(kind: ErrorKind, msg: &str) -> Self {
         Self {
