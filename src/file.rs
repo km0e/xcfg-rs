@@ -1,3 +1,5 @@
+use std::{env::current_dir, fs::canonicalize, path::Path};
+
 use super::error::{Error, ErrorKind};
 #[derive(Debug, PartialEq)]
 enum FileType {
@@ -26,7 +28,7 @@ impl<T: Default> Default for File<T> {
 }
 impl<T> File<T> {
     pub fn path(mut self, path: &str) -> Self {
-        self.file_type = match path.split('.').last() {
+        self.file_type = match path.rsplit_once('.').map(|(_, ext)| ext) {
             #[cfg(feature = "toml")]
             Some("toml") => FileType::Toml,
             #[cfg(feature = "yaml")]
@@ -39,6 +41,35 @@ impl<T> File<T> {
     }
 }
 impl<T: serde::de::DeserializeOwned> File<T> {
+    fn any_load(&mut self) -> Result<(), Error> {
+        let parent = match Path::new(&self.path).parent() {
+            Some(p) => canonicalize(p).map_err(Error::from)?,
+            None => current_dir().map_err(Error::from)?,
+        };
+        let entries = std::fs::read_dir(parent).map_err(Error::from)?;
+        for entry in entries {
+            let entry = entry.map_err(Error::from)?;
+            let path = entry.path();
+            if path.is_file() {
+                let path = path.to_str().ok_or(Error::new(
+                    ErrorKind::FileTypeError,
+                    "Path is not a valid UTF-8 string",
+                ))?;
+                let file_type = match path.split('.').last() {
+                    #[cfg(feature = "toml")]
+                    Some("toml") => FileType::Toml,
+                    #[cfg(feature = "yaml")]
+                    Some("yaml") | Some("yml") => FileType::Yaml,
+                    _ => continue,
+                };
+                if file_type == self.file_type {
+                    self.path = path.to_string();
+                    return self.load();
+                }
+            }
+        }
+        Ok(())
+    }
     pub fn load(&mut self) -> Result<(), Error> {
         if self.file_type == FileType::Unknown {
             return Err(Error::new(ErrorKind::FileTypeError, "Unknown file type"));
@@ -76,5 +107,17 @@ impl<T: serde::Serialize> File<T> {
         let buf = self.to_string()?;
         std::fs::write(&self.path, buf).map_err(Error::from)?;
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::path::Path;
+
+    #[test]
+    fn test_file() {
+        let path = "test.";
+        let mut f = Path::new(path).parent().unwrap().to_path_buf();
+        println!("{:?}", f);
     }
 }

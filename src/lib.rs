@@ -39,7 +39,7 @@
 //!     },
 //! };
 //! let path = "./test.toml";
-//! let mut f = File::new().path(path);
+//! let mut f = File::default().path(path);
 //! f.inner = test.clone();
 //! f.save().unwrap();
 //! f.inner = Test::default();
