@@ -94,7 +94,7 @@ where
     }
     pub fn run_with<F>(&self, f: F) -> Result<Action, Error>
     where
-        F: FnOnce() -> (),
+        F: FnOnce(),
     {
         loop {
             if self.inner.swap(false) {

@@ -2,47 +2,21 @@ use std::sync::{Arc, Mutex};
 use std::thread::{sleep, spawn};
 use std::time::Duration;
 
-use serde::{Deserialize, Serialize};
 use xcfg::{keep::Keeper, File};
-#[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
-pub struct Test {
-    a: i32,
-    b: Vec<i32>,
-    sub: SubTest,
-}
-impl Default for Test {
-    fn default() -> Self {
-        Self {
-            a: 0,
-            b: vec![],
-            sub: SubTest::default(),
-        }
-    }
-}
-
-#[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
-pub struct SubTest {
-    c: Vec<String>,
-}
-impl Default for SubTest {
-    fn default() -> Self {
-        Self { c: vec![] }
-    }
-}
+mod common;
+use common::*;
 #[test]
 fn main() {
-    let test = Test {
-        a: 1,
-        b: vec![0, 1, 2],
-        sub: SubTest {
-            c: vec!["ab".to_string(), "cd".to_string()],
-        },
-    };
+    let test = Test::new(
+        1,
+        vec![0, 1, 2],
+        SubTest::new(vec!["ab".to_string(), "cd".to_string()]),
+    );
     let path = "./test.toml";
-    let mut f = File::new().path(path);
+    let mut f = File::default().path(path);
     f.inner = test.clone();
     let amf = Arc::new(Mutex::new(f));
-    let move_amf = amf.clone();
+    let move_amf: Arc<Mutex<File<Test>>> = amf.clone();
     spawn(|| {
         let mut keeper = Keeper::new(move_amf);
         loop {
@@ -57,7 +31,7 @@ fn main() {
         }
     });
     sleep(Duration::from_millis(250));
-    let mut test_f = File::new().path(path);
+    let mut test_f = File::default().path(path);
     let pid = std::process::id() as i32;
     unsafe {
         libc::kill(pid, libc::SIGTERM);
