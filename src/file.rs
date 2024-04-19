@@ -54,8 +54,6 @@ mod file_impl {
                 ErrorKind::FileTypeError,
                 "Path is not a valid file name",
             ))?;
-        // let path = canonicalize(&path).map_err(Error::from)?;
-
         let parent = (match path.parent() {
             Some(parent) => canonicalize(parent),
             None => current_dir(),
@@ -72,7 +70,7 @@ mod file_impl {
                 };
                 if name.starts_with(fname) {
                     let ft = file_type(name);
-                    if ft != FileType::Any {
+                    if ft != FileType::Any && ft != FileType::Unknown {
                         let path = path
                             .to_str()
                             .ok_or(Error::new(
@@ -92,9 +90,6 @@ mod file_impl {
     where
         T: serde::de::DeserializeOwned,
     {
-        if ft == &FileType::Unknown {
-            return Err(Error::new(ErrorKind::FileTypeError, "Unknown file type"));
-        }
         let buf = std::fs::read_to_string(path).map_err(Error::from)?;
         let inner = match ft {
             #[cfg(feature = "toml")]
@@ -155,4 +150,21 @@ impl<T: serde::Serialize> File<T> {
         std::fs::write(&self.path, buf).map_err(Error::from)?;
         Ok(())
     }
+}
+pub fn load<T>(path: &str) -> Result<T, Error>
+where
+    T: serde::de::DeserializeOwned,
+{
+    let ft = file_impl::file_type(path);
+    let inner = match ft {
+        FileType::Any => {
+            let (_, _, inner) = file_impl::any_load(path)?;
+            inner
+        }
+        FileType::Unknown => {
+            return Err(Error::new(ErrorKind::FileTypeError, "Unknown file type"));
+        }
+        ft => file_impl::load(&ft, path)?,
+    };
+    Ok(inner)
 }

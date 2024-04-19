@@ -50,6 +50,7 @@
 mod error;
 pub use error::Error;
 mod file;
+pub use file::load;
 pub use file::File;
 #[cfg(feature = "keep")]
 pub mod keep;
