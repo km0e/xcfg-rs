@@ -1,6 +1,6 @@
 [package]
 name = "xcfg-rs"
-version = "0.2.2"
+version = "0.2.3"
 edition = "2021"
 description = "A simple configuration file parser for Rust"
 license = "MIT"
@@ -20,7 +20,6 @@ full = ["toml", "yaml", "keep"]
 
 [dependencies]
 toml = { version = "0.8.10", optional = true }
-# serde = { version = "1.0.196", features = ["derive"] }
 serde = { version = "1.0.196" }
 serde_yaml = { version = "0.9.31", optional = true }
 signal-hook = { version = "0.3.17", optional = true }
