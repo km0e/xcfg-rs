@@ -42,11 +42,11 @@ mod file_impl {
             _ => FileType::Unknown,
         }
     }
-    pub fn any_load<T>(path: &str) -> Result<(FileType, String, T), Error>
+    pub fn any_load<T>(spath: &str) -> Result<(FileType, String, T), Error>
     where
         T: serde::de::DeserializeOwned,
     {
-        let path = Path::new(path);
+        let path = Path::new(spath);
         let fname = path
             .file_name()
             .and_then(|name| name.to_str())
@@ -54,10 +54,14 @@ mod file_impl {
                 ErrorKind::FileTypeError,
                 "Path is not a valid file name",
             ))?;
-        let parent = (match path.parent() {
-            Some(parent) => canonicalize(parent),
-            None => current_dir(),
-        })
+        let parent = if fname == spath {
+            current_dir()
+        } else {
+            match path.parent() {
+                None => current_dir(),
+                Some(parent) => canonicalize(parent),
+            }
+        }
         .map_err(Error::from)?;
         let entries = std::fs::read_dir(parent).map_err(Error::from)?;
         for entry in entries {
