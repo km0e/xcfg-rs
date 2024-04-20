@@ -1,6 +1,6 @@
 [package]
 name = "xcfg-rs"
-version = "0.2.3"
+version = "0.2.4"
 edition = "2021"
 description = "A simple configuration file parser for Rust"
 license = "MIT"
