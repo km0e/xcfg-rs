@@ -151,6 +151,11 @@ impl<T: serde::Serialize> File<T> {
     }
     pub fn save(&self) -> Result<(), Error> {
         let buf = self.to_string()?;
+        let parent = std::path::Path::new(&self.path).parent().ok_or(Error::new(
+            ErrorKind::FileTypeError,
+            "Path is not a valid file name",
+        ))?;
+        std::fs::create_dir_all(parent).map_err(Error::from)?;
         std::fs::write(&self.path, buf).map_err(Error::from)?;
         Ok(())
     }
