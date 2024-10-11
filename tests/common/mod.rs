@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
-#[derive(Default, Serialize, Deserialize, PartialEq, Debug, Clone)]
+use xcfg::XCfg;
+#[derive(XCfg, Default, Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct Test {
     pub a: i32,
     pub b: Vec<i32>,

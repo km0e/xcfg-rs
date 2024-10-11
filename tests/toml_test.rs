@@ -2,7 +2,9 @@ mod common;
 #[cfg(feature = "toml")]
 mod keep {
     use super::common::*;
-    use xcfg::File;
+    use scopeguard::defer;
+    use xcfg::XCfg;
+
     #[test]
     fn main() {
         let test = Test::new(
@@ -11,12 +13,32 @@ mod keep {
             SubTest::new(vec!["ab".to_string(), "cd".to_string()]),
         );
         let path = "./test.toml";
-        let mut f = File::default().path(path);
-        f.inner = test.clone();
-        f.save().unwrap();
-        f.inner = Test::default();
-        f.load().unwrap();
-        assert_eq!(f.inner, test);
-        std::fs::remove_file(path).unwrap();
+        defer! {
+            std::fs::remove_file(path).unwrap();
+        }
+        test.save(path).unwrap();
+        assert_eq!(
+            Test::load(path)
+                .expect("Failed to load or default")
+                .into_inner(),
+            test
+        );
+        std::fs::write(
+            path,
+            r#"
+a = 1
+b = [0, 1, 2]
+
+[sub]
+c = ["ab", "cd"]
+"#,
+        )
+        .unwrap();
+        assert_eq!(
+            Test::load(path)
+                .expect("Failed to load or default")
+                .into_inner(),
+            test
+        );
     }
 }

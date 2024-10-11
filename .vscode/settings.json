@@ -2,5 +2,8 @@
     "rust-analyzer.cargo.features": [
         "full"
     ],
-    "liveServer.settings.port": 5501,
+    "cSpell.words": [
+        "scopeguard",
+        "xcfg"
+    ],
 }
