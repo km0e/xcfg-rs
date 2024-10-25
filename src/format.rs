@@ -348,4 +348,38 @@ pub trait XCfg {
     {
         File::new(path, self)?.save()
     }
+    /// # Example
+    /// ```rust
+    /// use serde::{Deserialize, Serialize};
+    /// use xcfg::{XCfg, Format};
+    /// #[derive(XCfg, Serialize, Deserialize, PartialEq, Debug, Clone)]
+    /// pub struct Test {
+    ///     a: i32,
+    ///     b: Vec<i32>,
+    ///     sub: SubTest,
+    /// }
+    /// #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
+    /// pub struct SubTest {
+    ///     c: Vec<String>,
+    /// }
+    /// let test = Test {
+    ///     a: 1,
+    ///     b: vec![0, 1, 2],
+    ///     sub: SubTest {
+    ///         c: vec!["ab".to_string(), "cd".to_string()],
+    ///    },
+    /// };
+    /// let right = r#"a = 1
+    /// b = [0, 1, 2]
+    ///
+    /// [sub]
+    /// c = ["ab", "cd"]
+    /// "#;
+    /// assert_eq!(test.fmt_to_string(Format::Toml).unwrap(), right);
+    fn fmt_to_string(&self, fmt: Format) -> Result<String, Error>
+    where
+        Self: serde::Serialize,
+    {
+        fmt.serialize(&self)
+    }
 }

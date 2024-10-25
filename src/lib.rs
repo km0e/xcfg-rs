@@ -31,5 +31,7 @@ mod error;
 mod format;
 pub use error::Error;
 pub use format::File;
+pub use format::Format;
 pub use format::XCfg;
+#[cfg(feature = "derive")]
 pub use xcfg_derive::XCfg;

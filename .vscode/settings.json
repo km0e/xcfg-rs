@@ -3,7 +3,10 @@
         "full"
     ],
     "cSpell.words": [
+        "intergrate",
         "scopeguard",
+        "serde",
+        "struct",
         "xcfg"
     ],
 }
