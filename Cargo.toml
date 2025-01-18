@@ -1,6 +1,6 @@
 [package]
 name = "xcfg-rs"
-version = "0.3.1"
+version = "0.3.2"
 edition = "2021"
 description = "A simple configuration file parser for Rust"
 license = "MIT"
@@ -21,18 +21,18 @@ full = ["derive", "toml", "yaml", "json"]
 
 [dependencies]
 xcfg-derive = { version = "0.1.0", path = "derive", optional = true }
-thiserror = "1.0.64"
-serde = { version = "1.0.196" }
-toml = { version = "0.8.10", optional = true }
+serde = { version = "1.0.217" }
 serde_yml = { version = "0.0.12", optional = true }
-serde_json = { version = "1.0.128", optional = true }
+serde_json = { version = "1.0.135", optional = true }
+thiserror = { version = "2.0.11" }
+toml = { version = "0.8.19", optional = true }
 
 [dev-dependencies]
-serde = { version = "1.0.196", features = ["derive"] }
-toml = { version = "0.8.10" }
+serde = { version = "1.0.217", features = ["derive"] }
+toml = { version = "0.8.19" }
 serde_yml = { version = "0.0.12" }
-serde_json = { version = "1.0.128" }
-scopeguard = "1.2.0"
+serde_json = { version = "1.0.135" }
+scopeguard = { version = "1.2.0" }
 
 [[test]]
 name = "any-test"

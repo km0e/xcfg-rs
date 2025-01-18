@@ -1,10 +1,3 @@
-#[cfg(feature = "json")]
-mod json_impl;
-#[cfg(feature = "toml")]
-mod toml_impl;
-#[cfg(feature = "yaml")]
-mod yaml_impl;
-
 use std::path::{Path, PathBuf};
 
 use super::error::Error;
@@ -27,60 +20,66 @@ where
     fn clone(&self) -> Self {
         Self {
             path: self.path.clone(),
-            fmt: self.fmt.clone(),
+            fmt: self.fmt,
             inner: self.inner.clone(),
         }
     }
 }
-#[derive(Debug, PartialEq, Clone)]
-pub enum Format {
-    #[cfg(feature = "toml")]
-    Toml,
-    #[cfg(feature = "yaml")]
-    Yaml,
-    #[cfg(feature = "json")]
-    Json,
-}
+// ugly but works
+macro_rules! fmt_impl {
+    ($([$name:literal, $mod:ident, $fmt:ident, $ext:pat]),*) => {
+        $(
+            #[cfg(feature = $name)]
+            mod $mod;
+        )*
 
-impl Format {
-    pub fn match_ext(ext: &str) -> Option<Self> {
-        match ext {
-            #[cfg(feature = "toml")]
-            crate::toml_ext!() => Some(Self::Toml),
-            #[cfg(feature = "yaml")]
-            crate::yaml_ext!() => Some(Self::Yaml),
-            #[cfg(feature = "json")]
-            crate::json_ext!() => Some(Self::Json),
-            _ => None,
+        #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+        pub enum Format {
+            $(
+                #[cfg(feature = $name)]
+                $fmt,
+            )*
         }
-    }
-    pub fn serialize<T>(&self, input: &T) -> Result<String, Error>
-    where
-        T: serde::Serialize,
-    {
-        match self {
-            #[cfg(feature = "toml")]
-            Self::Toml => toml_impl::to_string(input),
-            #[cfg(feature = "yaml")]
-            Self::Yaml => yaml_impl::to_string(input),
-            #[cfg(feature = "json")]
-            Self::Json => json_impl::to_string(input),
+        impl Format {
+            pub fn match_ext(ext: &str) -> Option<Self> {
+                match ext {
+                    $(
+                        #[cfg(feature = $name)]
+                        $ext => Some(Self::$fmt),
+                    )*
+                    _ => None,
+                }
+            }
+            pub fn serialize<T>(&self, input: &T) -> Result<String, Error>
+            where
+                T: serde::Serialize,
+            {
+                match self {
+                    $(
+                        #[cfg(feature = $name)]
+                        Self::$fmt => $mod::to_string(input),
+                    )*
+                }
+            }
+            pub fn deserialize<T>(&self, input: &str) -> Result<T, Error>
+            where
+                T: serde::de::DeserializeOwned,
+            {
+                match self {
+                    $(
+                        #[cfg(feature = $name)]
+                        Self::$fmt => $mod::from_str(input),
+                    )*
+                }
+            }
         }
-    }
-    pub fn deserialize<T>(&self, input: &str) -> Result<T, Error>
-    where
-        T: serde::de::DeserializeOwned,
-    {
-        match self {
-            #[cfg(feature = "toml")]
-            Self::Toml => toml_impl::from_str(input),
-            #[cfg(feature = "yaml")]
-            Self::Yaml => yaml_impl::from_str(input),
-            #[cfg(feature = "json")]
-            Self::Json => json_impl::from_str(input),
-        }
-    }
+    };
 }
+fmt_impl!(
+    ["toml", toml_impl, Toml, ".toml"],
+    ["yaml", yaml_impl, Yaml, ".yaml" | ".yml"],
+    ["json", json_impl, Json, ".json"]
+);
 
 mod file_impl {
     use super::Format;
@@ -172,7 +171,7 @@ where
     where
         T: serde::de::DeserializeOwned,
     {
-        let inner = file_impl::load(fmt.clone(), path.as_ref())?;
+        let inner = file_impl::load(fmt, path.as_ref())?;
         Ok(Self { path, fmt, inner })
     }
     pub fn load(mut self) -> Result<(), Error>
@@ -247,7 +246,7 @@ pub trait XCfg {
                 return Err(Error::UnknownFileFormat);
             }
             LoadFormat::Format(fmt) => {
-                let inner = file_impl::load(fmt.clone(), path.as_ref())?;
+                let inner = file_impl::load(fmt, path.as_ref())?;
                 let path = path.as_ref().to_path_buf();
                 File { path, fmt, inner }
             }
@@ -306,7 +305,7 @@ pub trait XCfg {
         use file_impl::LoadFormat;
         let inner = match file_impl::load_fmt(&path) {
             LoadFormat::Format(fmt) => {
-                let inner = file_impl::load(fmt.clone(), path.as_ref()).unwrap_or_default();
+                let inner = file_impl::load(fmt, path.as_ref()).unwrap_or_default();
                 File { path, fmt, inner }
             }
             _ => {

@@ -1,12 +1,5 @@
 {
     "rust-analyzer.cargo.features": [
         "full"
-    ],
-    "cSpell.words": [
-        "intergrate",
-        "scopeguard",
-        "serde",
-        "struct",
-        "xcfg"
-    ],
+    ]
 }
