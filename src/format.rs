@@ -76,9 +76,9 @@ macro_rules! fmt_impl {
     };
 }
 fmt_impl!(
-    ["toml", toml_impl, Toml, ".toml"],
-    ["yaml", yaml_impl, Yaml, ".yaml" | ".yml"],
-    ["json", json_impl, Json, ".json"]
+    ["toml", toml_impl, Toml, "toml"],
+    ["yaml", yaml_impl, Yaml, "yaml" | "yml"],
+    ["json", json_impl, Json, "json"]
 );
 
 mod file_impl {
@@ -112,6 +112,22 @@ mod file_impl {
         T: serde::de::DeserializeOwned,
     {
         fmt.deserialize(&std::fs::read_to_string(path)?)
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+        #[test]
+        fn test_load_fmt() {
+            let path = Path::new("test.toml");
+            assert_eq!(load_fmt(path), LoadFormat::Format(Format::Toml));
+            let path = Path::new("test");
+            assert_eq!(load_fmt(path), LoadFormat::Any);
+            let path = Path::new("test.");
+            assert_eq!(load_fmt(path), LoadFormat::Any);
+            let path = Path::new("test.unknown");
+            assert_eq!(load_fmt(path), LoadFormat::Unknown);
+        }
     }
 }
 impl<T> File<T, PathBuf> {
