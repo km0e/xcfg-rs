@@ -1,0 +1,62 @@
+[package]
+name = "xcfg-rs"
+version = "0.3.4"
+edition = "2024"
+description = "A simple configuration file parser for Rust"
+license = "MIT"
+repository = "https://github.com/km0e/xcfg-rs.git"
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "xcfg"
+path = "src/lib.rs"
+
+[features]
+default = ["toml"]
+derive = ["dep:xcfg-derive"]
+toml = ["dep:toml"]
+yaml = ["dep:serde_yml"]
+json = ["dep:serde_json"]
+full = ["derive", "toml", "yaml", "json"]
+
+[dependencies]
+xcfg-derive = { version = "0.1", optional = true }
+serde = { version = "1.0" }
+serde_yml = { version = "0.0", optional = true }
+serde_json = { version = "1.0", optional = true }
+thiserror = { version = "2.0" }
+toml = { version = "0.9", optional = true }
+
+[dev-dependencies]
+serde = { version = "1.0", features = ["derive"] }
+scopeguard = { version = "1.2" }
+
+[[test]]
+name = "any-test"
+path = "tests/any_test.rs"
+required-features = ["full"]
+
+[[test]]
+name = "toml-test"
+path = "tests/toml_test.rs"
+required-features = ["toml", "derive"]
+
+[[test]]
+name = "yaml-test"
+path = "tests/yaml_test.rs"
+required-features = ["yaml", "derive"]
+
+[[test]]
+name = "json-test"
+path = "tests/json_test.rs"
+required-features = ["json", "derive"]
+
+[[test]]
+name = "load-test"
+path = "tests/load.rs"
+required-features = ["full"]
+
+[[example]]
+name = "full"
+path = "example/full.rs"
+required-features = ["full"]
