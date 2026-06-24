@@ -1,5 +1,5 @@
 mod common;
-#[cfg(feature = "toml")]
+#[cfg(feature = "full")]
 mod keep {
     use super::common::*;
     use scopeguard::defer;

@@ -1,18 +1,25 @@
-# config-rs
-a simple tool to adapt different configuration file format
+# xcfg-rs
 
-## plan
+A simple tool to adapt different configuration file formats.
 
-- [x] intergrate with toml, yaml, json.
-...
+## Features
 
-## usage
-First, we need to add `serde` and `xcfg` to our `Cargo.toml`:
+- Load and save TOML, YAML, and JSON configuration files.
+- Derive `XCfg` for configuration structs.
+- Stream data from any `std::io::Read` / `std::io::Write` source.
+- Deterministic format selection when multiple files match the same base name.
+
+## Usage
+
+First, add `serde` and `xcfg-rs` to your `Cargo.toml`:
+
 ```sh
 cargo add serde -F derive
-cargo add xcfg -F full
+cargo add xcfg-rs -F full
 ```
-Then, we can use `XCfg` to load configuration from different file formats:
+
+Then, use `XCfg` to load configuration from different file formats:
+
 ```rust
 use serde::{Deserialize, Serialize};
 use xcfg::XCfg;
@@ -30,7 +37,40 @@ fn main() {
     println!("{:?}", config);
 }
 ```
-This example is also available in the `example` directory. You can clone this [repo](https://github.com/km0e/xcfg-rs.git) and run the example:
+
+This example is also available in the `xcfg-rs/example` directory. You can clone this [repo](https://github.com/km0e/xcfg-rs.git) and run the example:
+
 ```sh
-cd example && cargo r --example full --features full
+cd xcfg-rs && cargo run --example full --features full
 ```
+
+## Reader / Writer API
+
+You can also serialize to and deserialize from any `std::io::Write` / `std::io::Read` source:
+
+```rust
+use std::io::Cursor;
+use serde::{Deserialize, Serialize};
+use xcfg::{Format, XCfg};
+
+#[derive(XCfg, Serialize, Deserialize, Debug, PartialEq)]
+struct Config {
+    name: String,
+}
+
+let mut buf = Vec::new();
+Config { name: "foo".into() }.save_to_writer(&mut buf, Format::Json).unwrap();
+let config = Config::load_from_reader(Cursor::new(&buf), Format::Json)
+    .unwrap()
+    .into_inner();
+assert_eq!(config, Config { name: "foo".into() });
+```
+
+## Migrating to 0.4
+
+- `Error::InvalidPath` and `Error::UnknownFileFormat` now carry the path. If you were matching these variants without fields, update your match arms.
+- `File::to_string` is deprecated; use `File::serialize_to_string` instead.
+
+## License
+
+This project is licensed under the MIT License.

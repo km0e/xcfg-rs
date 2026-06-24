@@ -5,8 +5,23 @@ resolver = "3"
 [workspace.package]
 edition = "2024"
 authors = ["km0e <kmdr.error@gmail.com>"]
-repository = "https://github.com/km0e/resplus.git"
+repository = "https://github.com/km0e/xcfg-rs.git"
 description = "A Rust library for different configuration file formats, including TOML, YAML, and JSON."
 license = "MIT"
+rust-version = "1.85"
 
 [workspace.dependencies]
+serde = { version = "1.0" }
+serde_json = { version = "1.0" }
+serde_yml = { version = "0.0" }
+thiserror = { version = "2.0" }
+toml = { version = "0.9" }
+quote = { version = "1.0" }
+syn = { version = "2.0" }
+xcfg-derive = { version = "0.2", path = "xcfg-derive" }
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+[workspace.lints.clippy]
+all = "warn"

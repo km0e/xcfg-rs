@@ -1,0 +1,8 @@
+error: XCfg derive is only supported on structs
+ --> tests/ui/union.rs:4:1
+  |
+4 | / union Bar {
+5 | |     a: u32,
+6 | |     b: f32,
+7 | | }
+  | |_^

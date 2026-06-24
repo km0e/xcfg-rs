@@ -1,5 +1,5 @@
 mod common;
-#[cfg(feature = "toml")]
+#[cfg(feature = "json")]
 mod keep {
     use super::common::*;
     use scopeguard::defer;

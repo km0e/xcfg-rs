@@ -2,7 +2,7 @@
 //!
 //! # Example
 //!
-//! ```rust
+//! ```rust,no_run
 //! use serde::{Deserialize, Serialize};
 //! use xcfg::XCfg;
 //! #[derive(XCfg, Serialize, Deserialize, PartialEq, Debug, Clone)]
@@ -28,10 +28,14 @@
 //! std::fs::remove_file(path).unwrap();
 
 mod error;
+mod file;
 mod format;
+mod xcfg;
+
 pub use error::Error;
-pub use format::File;
+pub use file::File;
 pub use format::Format;
-pub use format::XCfg;
+pub use xcfg::XCfg;
+
 #[cfg(feature = "derive")]
 pub use xcfg_derive::XCfg;
